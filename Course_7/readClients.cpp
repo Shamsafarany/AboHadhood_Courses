@@ -9,6 +9,7 @@ struct Client{
     string name;
     string phone;
     double balance;
+    bool markDelete = false;
 };
 
 void readFileToVector(string fileName, vector<string>& lines){
@@ -21,6 +22,15 @@ void readFileToVector(string fileName, vector<string>& lines){
         }
         File.close();
     }
+}
+string convertRecToLine(Client c1, string delim) {
+    string res;
+    res+= c1.accountNumber + delim;
+    res+= c1.pinCode + delim;
+    res+= c1.name + delim;
+    res+= c1.phone + delim;
+    res+= to_string(c1.balance);
+    return res;
 }
 vector<string> splitString(string sentence, string delim) {
     vector<string> words;
@@ -47,7 +57,7 @@ Client convertLineToClient(string line, string delim) {
     c1.accountNumber = words.at(0);
     c1.pinCode = words.at(1);
     c1.name = words.at(2);
-    c1.phone = stod(words.at(3));
+    c1.phone = words.at(3);
     c1.balance= stod(words.at(4));
     return c1;
 }
@@ -55,7 +65,7 @@ vector<Client> readClients(){
     vector<string> lines;
     vector<Client> clients;
     readFileToVector("clients.txt", lines);
-    for (string line: lines) {
+    for (string &line: lines) {
         Client c1 = convertLineToClient(line, "//");
         clients.push_back(c1);
     }
@@ -76,22 +86,106 @@ bool search(string number, Client& client){
 void printInfo(Client client) {
     cout <<client.accountNumber << " " << client.name << endl;
 }
-void searchAccountNumber(){
-    string accountNumber = "";
-    Client client;
+string readAccountNumber(){
+    string accountNumber;
     cout <<"Enter account number: ";
     getline(cin, accountNumber);
-    bool isFound = search(accountNumber, client);
+    return accountNumber;
+}
+bool searchAccountNumber(string number){
+    Client client;
+    bool isFound = search(number, client);
     if (isFound) {
         printInfo(client);
+        return true;
+    }
+    return false;
+}
+void markAccountDelete(string number, vector<Client> &clients){
+    for (Client &c : clients){
+        if (c.accountNumber == number) {
+            c.markDelete = true;
+            return;
+        }
     }
 }
+void saveVectorToFile(string fileName, vector<Client> clients) {
+    fstream File;
+    File.open(fileName, ios::out);
+    string line = "";
+    if (File.is_open()) {
+        for (Client &c : clients) {
+            line = convertRecToLine(c, "//");
+            if (c.markDelete != true) {
+                File << line << endl;
+            }
+        }
+        File.close();
+    }
+}
+void deleteClientByAccount(string number, vector<Client> &clients){
+    char choice;
+    if (searchAccountNumber(number)) {
+        cout <<"Do you want to delete? y || n" << endl;
+        cin >> choice;
+        if ('y' == tolower(choice)) {
+            cout <<"Deleteing Client..." <<endl;
+            markAccountDelete(number,clients);
+            saveVectorToFile("clients.txt", clients);
+            clients = readClients();
+        } else {
+            cout <<"Cancel Delete" << endl;
+        }
 
+    }
+    
+}
+void updateClient(string number, Client &c) {
+    cout <<"Pincode: ";
+    getline(cin >> ws, c.pinCode );
+    cout <<"Name: ";
+    getline(cin, c.name);
+    cout <<"Phone: ";
+    getline(cin, c.phone);
+    cout<<"Balance: ";
+    cin >> c.balance;
+}
+void updateClientByAccount(string number, vector<Client> &clients) {
+    char choice;
+    if (searchAccountNumber(number)) {
+        cout <<"Do you want to update? y || n " << endl;
+        cin >> choice;
+        if (tolower(choice) == 'y') {
+            cout <<"Update Client...." << endl;
+            for (Client &c : clients) {
+                if (c.accountNumber == number) {
+                    updateClient(number, c);
+                    break;  
+                }
+            }
+            saveVectorToFile("clients.txt", clients);
+            cout<<"Client Updated!" <<endl;
+
+            
+        } else {
+            cout <<"Cancel Update" << endl;
+        }
+    } 
+}
+void printClients(vector<Client> clients) {
+    for (Client c : clients) {
+        cout << c.accountNumber << " " << c.name << " " << 
+        c.balance<< endl;
+    }
+}
 int main(){
     vector<Client> clients = readClients();
-    for (Client c : clients) {
-        cout << c.accountNumber << " " << c.name << endl;
-    }
-
-    searchAccountNumber();
+    printClients(clients);
+    deleteClientByAccount(readAccountNumber(), clients);
+    cout<<"After deletion: " << endl;
+    printClients(clients);
+    updateClientByAccount(readAccountNumber(), clients);
+    cout<<"After update: " << endl;
+    printClients(clients);
+    
 }

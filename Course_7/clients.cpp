@@ -60,7 +60,25 @@ void addClients(){
     } while (tolower(more) == 'y');
 
 }
+string readAccountNumber() {
+    string account;
+    cout<<"Enter account number:  ";
+    cin >> account;
+    return account;
+}
+void loadFileToVector(string fileName, vector<string> &clients) {
+    fstream File;
+    string line;
+    File.open(fileName, ios::in);
+    if (File.is_open()) {
+        while(getline(File, line)){
+            clients.push_back(line);
+        }
+        File.close();
+    }
+}
+
 
 int main(){
-    addClients();
+    addClients();  
 }

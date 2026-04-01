@@ -1,0 +1,25 @@
+#include <iostream>
+#include <ctime>
+using namespace std;
+
+int main(){
+    time_t t = time(0);
+    char* dt = ctime(&t);
+    cout << "Local date and time: " << dt << endl;
+    tm* gmtm = gmtime(&t);
+    dt = asctime(gmtm);
+    cout << "UTC date and time: " << dt << endl;
+
+    time_t t1 = time(0); // get time now
+    tm* now = localtime(&t1);
+    cout << "Year: " << now->tm_year + 1900 << endl;
+    cout << "Month: " << now->tm_mon + 1 << endl;
+    cout << "Day: " << now->tm_mday << endl;
+    cout << "Hour: " << now->tm_hour << endl;
+    cout << "Min: " << now->tm_min << endl;
+    cout << "Second: " << now->tm_sec << endl;
+    cout << "Week Day (Days since sunday): " << now->tm_wday << endl;
+    cout << "Year Day (Days since Jan 1st): " << now->tm_yday << endl;
+    cout << "hours of daylight savings:" << now->tm_isdst << endl;
+
+}

@@ -30,6 +30,9 @@ vector<string> splitString(string line, string delim);
 vector<string> readFileToVector(string fileName);
 Client convertLineToRec(string line);
 vector<Client> readClients(string fileName);
+void markAccountDelete(string number, vector<Client> &clients);
+void updateClient(vector<Client>& clients, string fileName);
+void updateInfo(Client& c);
 
 int main(){ 
     string fileName = "clients.txt";
@@ -59,7 +62,7 @@ int main(){
         case 4: cout<<"====================================\n";
                 cout<<"UPDATE CLIENT INFO"<< endl;
                 cout<<"====================================\n";
-                //deleteClient(clients, fileName);
+                updateClient(clients, fileName);
                 break;
         case 5:
                 cout<<"====================================\n";
@@ -158,7 +161,8 @@ void deleteClient(vector<Client>& clients, string fileName) {
     }
     Client c;
     char choice;
-    if(searchAccount(readClientId(), clients, c)) {
+    string number = readClientId();
+    if(searchAccount(number, clients, c)) {
         printClientInfo(c);
         cout <<"Do you want to delete client " << "[" << c.id << "]? [y / n]: ";
         cin >> choice;
@@ -170,6 +174,7 @@ void deleteClient(vector<Client>& clients, string fileName) {
             cout <<"Canceling operation... \n";
             return;
         } 
+        markAccountDelete(number,clients);
         saveVectorToFile(fileName, clients);
         cout <<"Client deleted successfully \n";   
         clients = readClients(fileName);
@@ -183,14 +188,20 @@ void deleteClient(vector<Client>& clients, string fileName) {
 bool searchAccount(string number, vector<Client>& clients, Client& c){
     for (Client& client : clients) {
         if (client.id == number) {
-            client.markDelete = true;
             c = client;
             return true;
         }
     }
     return false;
 }
-
+void markAccountDelete(string number, vector<Client> &clients){
+    for (Client &c : clients){
+        if (c.id == number) {
+            c.markDelete = true;
+            return;
+        }
+    }
+}
 void saveVectorToFile(string fileName, vector<Client>& clients) {
     fstream File;
     File.open(fileName, ios::out);
@@ -274,4 +285,39 @@ vector<Client> readClients(string fileName){
         clients.push_back(c);
     }
     return clients;
+}
+
+void updateClient(vector<Client>& clients, string fileName) {
+    if (clients.size() == 0) {
+        cout<<"No Clients Added \n";
+        return;
+    }
+    Client c;
+    char choice;
+    string number = readClientId();
+    if(searchAccount(number, clients, c)) {
+        printClientInfo(c);
+        cout<<"Update Client Info \n";
+       for (Client &cl : clients) {
+                if (cl.id== number) {
+                    updateInfo(cl);
+                    break;  
+                }
+        }
+       saveVectorToFile(fileName, clients);
+       cout<<"Client Updated!" <<endl;
+    } else {
+        cout <<"Client not found \n";
+    }
+}
+
+void updateInfo(Client& c) {
+    cout <<"ID: ";
+    getline(cin >> ws, c.id);
+    cout <<"Name: ";
+    getline(cin, c.name);
+    cout <<"Phone: ";
+    getline(cin, c.phone);
+    cout<<"Balance: ";
+    cin >> c.balance;
 }

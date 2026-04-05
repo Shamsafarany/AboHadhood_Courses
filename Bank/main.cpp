@@ -14,9 +14,11 @@ struct Client{
 
 //method declarations
 int displayMenu();
-void addClient(vector<Client>& clients);
+void addClient(vector<Client>& clients, string fileName);
 void getClientInfo(Client& client);
 void printVector(vector<Client> clients);
+string convertRecToLine(Client client, string delim); 
+void writeLineToFile(string fileName, string line); 
 
 int main(){
     vector <Client> clients = vector<Client>();
@@ -32,9 +34,15 @@ int main(){
         case 2:
                 cout<<"====================================\n";
                 cout<<"ADD NEW CLIENT"<< endl;
-                addClient(clients);
+                cout<<"====================================\n";
+                addClient(clients, fileName);
                 break;
         case 3:
+                cout<<"====================================\n";
+                cout<<"DELETE CLIENT"<< endl;
+                cout<<"====================================\n";
+                
+                break;
         case 4:
         case 5:
         case 6: 
@@ -66,12 +74,14 @@ int displayMenu(){
     return choice;
 }
 
-void addClient(vector<Client>& clients) {
+void addClient(vector<Client>& clients, string fileName) {
     Client client;
     getClientInfo(client);
     clients.push_back(client);
     cout<<"Client added to vector\n";
     printVector(clients);
+    string line = convertRecToLine(client, "//");
+    writeLineToFile(fileName, line);
 }
 void getClientInfo(Client& client){
     cout<<"Client Info \n";
@@ -86,9 +96,6 @@ void getClientInfo(Client& client){
 }
 
 void printVector(vector<Client> clients) {
-    cout<<"====================================\n";
-    cout<<"Clients List \n";
-    cout<<"====================================\n";
     if (clients.size() == 0) {
         cout <<"No Added Clients\n";
         return;
@@ -98,7 +105,19 @@ void printVector(vector<Client> clients) {
     }
 }
 
-void writeToFile(string fileName, vector<Client> clients) {
-    fstream File (fileName);
-
+string convertRecToLine(Client client, string delim) {
+    string line = "";
+    line+= client.id + delim;
+    line+= client.name  + delim;
+    line+= client.phone + delim;
+    line+= to_string(client.balance);
+    return line;
+}
+void writeLineToFile(string fileName, string line) {
+    fstream File;
+    File.open(fileName, ios::out | ios::app);
+    if (File.is_open()) {
+        File << line << endl;
+        File.close();
+    }
 }

@@ -36,6 +36,8 @@ void updateInfo(Client& c);
 int displayTransactionsMenu();
 void runOperation(int choice, vector<Client>& clients, string fileName);
 void deposit(vector<Client>& clients, string fileName);
+void runMainOperations(int choice, vector<Client>& clients, string fileName);
+void withdraw(vector<Client>& clients, string fileName);
 
 
 int main(){ 
@@ -44,7 +46,38 @@ int main(){
     int choice;
     do {
         choice = displayMenu();
-        switch(choice) {
+        runMainOperations(choice, clients, fileName);
+    } while (choice != 7);
+    
+}
+
+int displayMenu(){
+    int choice = 0;
+    
+    cout <<"====================================\n";
+    cout<<"Menu"<< endl;
+    cout <<"====================================\n";
+    cout<<"[1]- View Client List \n";
+    cout<<"[2]- Add Client \n";
+    cout<<"[3]- Delete Client \n";
+    cout<<"[4]- Update Client \n";
+    cout<<"[5]- Find Client \n";
+    cout<<"[6]- Transactions \n";
+    cout<<"[7]- Exit\n";
+    cout <<"====================================\n";
+    cout<<"Choose Operation: ";
+    cin >> choice;
+    
+    while(choice >7 || choice < 1) {
+        cout<<"Invalid choice - Please choose a number between [1] and [7]: ";
+        cin >> choice;
+    }
+    
+    return choice;
+}
+
+void runMainOperations(int choice, vector<Client>& clients, string fileName) {
+    switch(choice) {
         case 1: 
                 cout<<"====================================\n";
                 cout<<"VIEW CLIENT LIST"<< endl;
@@ -81,35 +114,7 @@ int main(){
                 runOperation(choice2, clients, fileName);
                 break;
         }
-    } while (choice != 7);
-    
 }
-
-int displayMenu(){
-    int choice = 0;
-    
-    cout <<"====================================\n";
-    cout<<"Menu"<< endl;
-    cout <<"====================================\n";
-    cout<<"[1]- View Client List \n";
-    cout<<"[2]- Add Client \n";
-    cout<<"[3]- Delete Client \n";
-    cout<<"[4]- Update Client \n";
-    cout<<"[5]- Find Client \n";
-    cout<<"[6]- Transactions \n";
-    cout<<"[7]- Exit\n";
-    cout <<"====================================\n";
-    cout<<"Choose Operation: ";
-    cin >> choice;
-    
-    while(choice >7 || choice < 1) {
-        cout<<"Invalid choice - Please choose a number between [1] and [7]: ";
-        cin >> choice;
-    }
-    
-    return choice;
-}
-
 void addClient(vector<Client>& clients, string fileName) {
     Client client;
     char choice;
@@ -382,7 +387,7 @@ void runOperation(int choice, vector<Client>& clients, string fileName) {
                 cout<<"====================================\n";
                 cout<<"WITHDRAW"<< endl;
                 cout<<"====================================\n";
-
+                withdraw(clients, fileName);
                 break;
         case 3:
                 cout<<"====================================\n";
@@ -392,6 +397,7 @@ void runOperation(int choice, vector<Client>& clients, string fileName) {
                 break;
         case 4: 
             int choice = displayMenu();
+            runMainOperations(choice, clients, fileName);
             break;
     }
 }
@@ -413,16 +419,85 @@ void deposit(vector<Client>& clients, string fileName){
             cout << "Please enter a valid amount to deposit: ";
             cin >> amount;
         }
+        cout <<"Are you sure you want to deposit amount [y/n]?  ";
+        cin >> choice;
+        while (tolower(choice) != 'y' && tolower(choice)!= 'n'){
+            cout<<"Please enter y or n: ";
+            cin >> choice;
+        }
+        if (choice == 'n') {
+            int choice = displayTransactionsMenu();
+            runOperation(choice, clients, fileName);
+            return;
+        }
         for (Client &cl : clients) {
                 if (cl.id== number) {
                     cl.balance += amount;
+                    cout <<"New Balance: " << cl.balance << endl;
                     break;  
                 }
         }
        saveVectorToFile(fileName, clients);
-       cout<<"Deposit is successful!" <<endl;
+       cout<<"Deposit successful!" <<endl;
+       int choice = displayTransactionsMenu();
+       runOperation(choice, clients, fileName);
+       
     } else {
         cout <<"Client not found \n";
+        int choice = displayTransactionsMenu();
+        runOperation(choice, clients, fileName);
     }
     
+}
+
+void withdraw(vector<Client>& clients, string fileName){
+    if (clients.size() == 0) {
+        cout<<"No Clients Added \n";
+        return;
+    }
+    Client c;
+    char choice;
+    double amount;
+    string number = readClientId();
+    if(searchAccount(number, clients, c)) {
+        printClientInfo(c);
+        cout<<"Withdraw Amount: ";
+        cin >> amount;
+        while (amount <= 0) {
+            cout << "Please enter a valid amount to deposit: ";
+            cin >> amount;
+        }
+        while (amount > c.balance) {
+            cout<<"Amount exceeds available balance, you can withdraw up to " << c.balance << endl;
+            cout <<"Enter amount: ";
+            cin>> amount;
+        }
+        cout <<"Are you sure you want to deposit amount [y/n]?  ";
+        cin >> choice;
+        while (tolower(choice) != 'y' && tolower(choice)!= 'n'){
+            cout<<"Please enter y or n: ";
+            cin >> choice;
+        }
+        if (choice == 'n') {
+            int choice = displayTransactionsMenu();
+            runOperation(choice, clients, fileName);
+            return;
+        }
+        for (Client &cl : clients) {
+                if (cl.id== number) {
+                    cl.balance -= amount;
+                    cout <<"New Balance: " << cl.balance << endl;
+                    break;  
+                }
+        }
+       saveVectorToFile(fileName, clients);
+       cout<<"Withdraw successful!" <<endl;
+       int choice = displayTransactionsMenu();
+       runOperation(choice, clients, fileName);
+       
+    } else {
+        cout <<"Client not found \n";
+        int choice = displayTransactionsMenu();
+        runOperation(choice, clients, fileName);
+    }
 }

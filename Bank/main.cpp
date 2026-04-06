@@ -33,6 +33,10 @@ vector<Client> readClients(string fileName);
 void markAccountDelete(string number, vector<Client> &clients);
 void updateClient(vector<Client>& clients, string fileName);
 void updateInfo(Client& c);
+int displayTransactionsMenu();
+void runOperation(int choice, vector<Client>& clients, string fileName);
+void deposit(vector<Client>& clients, string fileName);
+
 
 int main(){ 
     string fileName = "clients.txt";
@@ -70,8 +74,14 @@ int main(){
                 findClient(clients);
                 break;
         case 6: 
+                cout<<"====================================\n";
+                cout<<"Transactions"<< endl;
+                cout<<"====================================\n";
+                int choice2 = displayTransactionsMenu();
+                runOperation(choice2, clients, fileName);
+                break;
         }
-    } while (choice != 6);
+    } while (choice != 7);
     
 }
 
@@ -86,13 +96,14 @@ int displayMenu(){
     cout<<"[3]- Delete Client \n";
     cout<<"[4]- Update Client \n";
     cout<<"[5]- Find Client \n";
-    cout<<"[6]- Exit\n";
+    cout<<"[6]- Transactions \n";
+    cout<<"[7]- Exit\n";
     cout <<"====================================\n";
     cout<<"Choose Operation: ";
     cin >> choice;
     
-    while(choice >6 || choice < 1) {
-        cout<<"Invalid choice - Please choose a number between [1] and [6]: ";
+    while(choice >7 || choice < 1) {
+        cout<<"Invalid choice - Please choose a number between [1] and [7]: ";
         cin >> choice;
     }
     
@@ -338,4 +349,80 @@ void updateInfo(Client& c) {
     getline(cin, c.phone);
     cout<<"Balance: ";
     cin >> c.balance;
+}
+
+int displayTransactionsMenu(){
+    int choice = 0;
+    cout <<"====================================\n";
+    cout<<"Operations"<< endl;
+    cout <<"====================================\n";
+    cout<<"[1]- Deposit \n";
+    cout<<"[2]- Withdraw\n";
+    cout<<"[3]- Total Balances \n";
+    cout<<"[4]- Go back to Main Menu \n";
+    cout <<"====================================\n";
+    cout<<"Choose Operation: ";
+    cin >> choice;
+    
+    while(choice >4 || choice < 1) {
+        cout<<"Invalid choice - Please choose a number between [1] and [4]: ";
+        cin >> choice;
+    }
+    return choice;
+}
+
+void runOperation(int choice, vector<Client>& clients, string fileName) {
+    switch(choice) {
+        case 1: 
+                cout<<"====================================\n";
+                cout<<"DEPOSIT"<< endl;
+                deposit(clients, fileName);
+                break;
+        case 2:
+                cout<<"====================================\n";
+                cout<<"WITHDRAW"<< endl;
+                cout<<"====================================\n";
+
+                break;
+        case 3:
+                cout<<"====================================\n";
+                cout<<"TOTAL BALANCES"<< endl;
+                cout<<"====================================\n";
+
+                break;
+        case 4: 
+            int choice = displayMenu();
+            break;
+    }
+}
+
+void deposit(vector<Client>& clients, string fileName){
+    if (clients.size() == 0) {
+        cout<<"No Clients Added \n";
+        return;
+    }
+    Client c;
+    char choice;
+    double amount;
+    string number = readClientId();
+    if(searchAccount(number, clients, c)) {
+        printClientInfo(c);
+        cout<<"Deposit Amount: ";
+        cin >> amount;
+        while (amount <= 0) {
+            cout << "Please enter a valid amount to deposit: ";
+            cin >> amount;
+        }
+        for (Client &cl : clients) {
+                if (cl.id== number) {
+                    cl.balance += amount;
+                    break;  
+                }
+        }
+       saveVectorToFile(fileName, clients);
+       cout<<"Deposit is successful!" <<endl;
+    } else {
+        cout <<"Client not found \n";
+    }
+    
 }

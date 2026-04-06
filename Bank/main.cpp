@@ -38,6 +38,7 @@ void runOperation(int choice, vector<Client>& clients, string fileName);
 void deposit(vector<Client>& clients, string fileName);
 void runMainOperations(int choice, vector<Client>& clients, string fileName);
 void withdraw(vector<Client>& clients, string fileName);
+void displayTotalBalances(vector<Client> clients, string fileName);
 
 
 int main(){ 
@@ -110,6 +111,7 @@ void runMainOperations(int choice, vector<Client>& clients, string fileName) {
                 cout<<"====================================\n";
                 cout<<"Transactions"<< endl;
                 cout<<"====================================\n";
+                clients = readClients(fileName);
                 int choice2 = displayTransactionsMenu();
                 runOperation(choice2, clients, fileName);
                 break;
@@ -393,7 +395,7 @@ void runOperation(int choice, vector<Client>& clients, string fileName) {
                 cout<<"====================================\n";
                 cout<<"TOTAL BALANCES"<< endl;
                 cout<<"====================================\n";
-
+                displayTotalBalances(clients, fileName);
                 break;
         case 4: 
             int choice = displayMenu();
@@ -500,4 +502,18 @@ void withdraw(vector<Client>& clients, string fileName){
         int choice = displayTransactionsMenu();
         runOperation(choice, clients, fileName);
     }
+}
+
+void displayTotalBalances(vector<Client> clients, string fileName) {
+    printVector(clients);
+    cout<<"-------------------------\n";
+   
+    double total = 0;
+    for (Client &c: clients) {
+        total += c.balance;
+    }
+    cout<< "Total Balances: " << total << endl;
+    int choice = displayTransactionsMenu();
+    runOperation(choice, clients, fileName);
+
 }

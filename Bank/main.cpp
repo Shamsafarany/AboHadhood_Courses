@@ -16,7 +16,7 @@ struct Client{
 //method declarations
 int displayMenu();
 void addClient(vector<Client>& clients, string fileName);
-void getClientInfo(Client& client);
+void getClientInfo(Client& client, vector<Client> clients);
 void printVector(vector<Client> clients);
 string convertRecToLine(Client client, string delim); 
 void printClientInfo(Client client);
@@ -37,7 +37,6 @@ void updateInfo(Client& c);
 int main(){ 
     string fileName = "clients.txt";
     vector <Client> clients = readClients(fileName);
-    printVector(clients);
     int choice;
     do {
         choice = displayMenu();
@@ -102,23 +101,43 @@ int displayMenu(){
 
 void addClient(vector<Client>& clients, string fileName) {
     Client client;
-    getClientInfo(client);
-    clients.push_back(client);
-    cout<<"Client added to vector\n";
-    printVector(clients);
-    string line = convertRecToLine(client, "//");
-    writeLineToFile(fileName, line);
+    char choice;
+    do{
+        getClientInfo(client, clients);
+        clients.push_back(client);
+        cout<<"Client added to vector\n";
+        printVector(clients);
+        string line = convertRecToLine(client, "//");
+        writeLineToFile(fileName, line);
+        cout<<"Do you want to add a new client: [y / n]: ";
+        cin >> choice;
+         while(tolower(choice)!= 'y' && tolower(choice) != 'n') {
+            cout <<"Please enter y or n: ";
+            cin >> choice;
+        }
+    }while (tolower(choice) == 'y');
+    
 }
-void getClientInfo(Client& client){
+void getClientInfo(Client& client, vector<Client> clients){
     cout<<"Client Info \n";
     cout<<"ID: ";
     getline(cin>>ws, client.id);
+    while (searchAccount(client.id, clients, client)) {
+        cout <<"ID already exists!" << endl;
+        cout<<"Enter new ID: ";
+        getline(cin>>ws, client.id);
+    }
     cout<<"Name: ";
     getline(cin, client.name);
     cout<<"Phone: ";
     getline(cin, client.phone);
     cout<<"Balance: ";
     cin >> client.balance;
+    while(client.balance < 100) {
+        cout<<"Balance must atleast be 100$. \n";
+        cout<<"Balance: ";
+        cin >> client.balance;
+    }
 }
 
 void printVector(vector<Client> clients) {
@@ -126,6 +145,7 @@ void printVector(vector<Client> clients) {
         cout <<"No Added Clients\n";
         return;
     }
+    cout<<"Clients : [" << clients.size() << "] \n";
     for (Client& client : clients) {
         cout << client.id << " - " << client.name << " - " << client.balance << endl;
     }
@@ -312,8 +332,6 @@ void updateClient(vector<Client>& clients, string fileName) {
 }
 
 void updateInfo(Client& c) {
-    cout <<"ID: ";
-    getline(cin >> ws, c.id);
     cout <<"Name: ";
     getline(cin, c.name);
     cout <<"Phone: ";

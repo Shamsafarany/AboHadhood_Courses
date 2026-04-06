@@ -39,16 +39,23 @@ void deposit(vector<Client>& clients, string fileName);
 void runMainOperations(int choice, vector<Client>& clients, string fileName);
 void withdraw(vector<Client>& clients, string fileName);
 void displayTotalBalances(vector<Client> clients, string fileName);
+void updateBalance(double amount, string number, vector<Client>& clients, string fileName);
 
 
 int main(){ 
     string fileName = "clients.txt";
     vector <Client> clients = readClients(fileName);
     int choice;
+    bool isRunning = true;
     do {
         choice = displayMenu();
         runMainOperations(choice, clients, fileName);
-    } while (choice != 7);
+        if (choice == 7) {
+            isRunning = false;
+            cout <<"-----------------------------\n";
+            cout<<"Exiting Program..... \n";
+        }
+    } while (isRunning);
     
 }
 
@@ -200,6 +207,10 @@ void deleteClient(vector<Client>& clients, string fileName) {
     Client c;
     char choice;
     string number = readClientId();
+    while(!searchAccount(number, clients, c)){
+        cout <<"Client not found. Try again \n";
+        number = readClientId();
+    }
     if(searchAccount(number, clients, c)) {
         printClientInfo(c);
         cout <<"Do you want to delete client " << "[" << c.id << "]? [y / n]: ";
@@ -217,9 +228,7 @@ void deleteClient(vector<Client>& clients, string fileName) {
         cout <<"Client deleted successfully \n";   
         clients = readClients(fileName);
         printVector(clients);
-    } else {
-        cout <<"Client not found. \n";
-    }
+    } 
     
 }
 
@@ -333,6 +342,10 @@ void updateClient(vector<Client>& clients, string fileName) {
     Client c;
     char choice;
     string number = readClientId();
+    while(!searchAccount(number, clients, c)){
+        cout <<"Client not found. Try again \n";
+        number = readClientId();
+    }
     if(searchAccount(number, clients, c)) {
         printClientInfo(c);
         cout<<"Update Client Info \n";
@@ -344,14 +357,12 @@ void updateClient(vector<Client>& clients, string fileName) {
         }
        saveVectorToFile(fileName, clients);
        cout<<"Client Updated!" <<endl;
-    } else {
-        cout <<"Client not found \n";
     }
 }
 
 void updateInfo(Client& c) {
     cout <<"Name: ";
-    getline(cin, c.name);
+    getline(cin>>ws, c.name);
     cout <<"Phone: ";
     getline(cin, c.phone);
     cout<<"Balance: ";
@@ -398,9 +409,7 @@ void runOperation(int choice, vector<Client>& clients, string fileName) {
                 displayTotalBalances(clients, fileName);
                 break;
         case 4: 
-            int choice = displayMenu();
-            runMainOperations(choice, clients, fileName);
-            break;
+               return;
     }
 }
 
@@ -413,6 +422,10 @@ void deposit(vector<Client>& clients, string fileName){
     char choice;
     double amount;
     string number = readClientId();
+    while(!searchAccount(number, clients, c)){
+        cout <<"Client not found. Try again \n";
+        number = readClientId();
+    }
     if(searchAccount(number, clients, c)) {
         printClientInfo(c);
         cout<<"Deposit Amount: ";
@@ -421,35 +434,8 @@ void deposit(vector<Client>& clients, string fileName){
             cout << "Please enter a valid amount to deposit: ";
             cin >> amount;
         }
-        cout <<"Are you sure you want to deposit amount [y/n]?  ";
-        cin >> choice;
-        while (tolower(choice) != 'y' && tolower(choice)!= 'n'){
-            cout<<"Please enter y or n: ";
-            cin >> choice;
-        }
-        if (choice == 'n') {
-            int choice = displayTransactionsMenu();
-            runOperation(choice, clients, fileName);
-            return;
-        }
-        for (Client &cl : clients) {
-                if (cl.id== number) {
-                    cl.balance += amount;
-                    cout <<"New Balance: " << cl.balance << endl;
-                    break;  
-                }
-        }
-       saveVectorToFile(fileName, clients);
-       cout<<"Deposit successful!" <<endl;
-       int choice = displayTransactionsMenu();
-       runOperation(choice, clients, fileName);
-       
-    } else {
-        cout <<"Client not found \n";
-        int choice = displayTransactionsMenu();
-        runOperation(choice, clients, fileName);
-    }
-    
+       updateBalance(amount, number, clients, fileName);       
+    } 
 }
 
 void withdraw(vector<Client>& clients, string fileName){
@@ -461,6 +447,10 @@ void withdraw(vector<Client>& clients, string fileName){
     char choice;
     double amount;
     string number = readClientId();
+    while(!searchAccount(number, clients, c)){
+        cout <<"Client not found. Try again \n";
+        number = readClientId();
+    }
     if(searchAccount(number, clients, c)) {
         printClientInfo(c);
         cout<<"Withdraw Amount: ";
@@ -474,34 +464,10 @@ void withdraw(vector<Client>& clients, string fileName){
             cout <<"Enter amount: ";
             cin>> amount;
         }
-        cout <<"Are you sure you want to deposit amount [y/n]?  ";
-        cin >> choice;
-        while (tolower(choice) != 'y' && tolower(choice)!= 'n'){
-            cout<<"Please enter y or n: ";
-            cin >> choice;
-        }
-        if (choice == 'n') {
-            int choice = displayTransactionsMenu();
-            runOperation(choice, clients, fileName);
-            return;
-        }
-        for (Client &cl : clients) {
-                if (cl.id== number) {
-                    cl.balance -= amount;
-                    cout <<"New Balance: " << cl.balance << endl;
-                    break;  
-                }
-        }
-       saveVectorToFile(fileName, clients);
-       cout<<"Withdraw successful!" <<endl;
-       int choice = displayTransactionsMenu();
-       runOperation(choice, clients, fileName);
-       
-    } else {
-        cout <<"Client not found \n";
-        int choice = displayTransactionsMenu();
-        runOperation(choice, clients, fileName);
-    }
+       amount *= -1;
+       updateBalance(amount, number, clients, fileName); 
+    } 
+    
 }
 
 void displayTotalBalances(vector<Client> clients, string fileName) {
@@ -516,4 +482,30 @@ void displayTotalBalances(vector<Client> clients, string fileName) {
     int choice = displayTransactionsMenu();
     runOperation(choice, clients, fileName);
 
+}
+
+void updateBalance(double amount, string number, vector<Client>& clients, string fileName) {
+    char choice;
+    cout <<"Are you sure you want to proceed with transaction [y/n]?  ";
+    cin >> choice;
+    while (tolower(choice) != 'y' && tolower(choice)!= 'n'){
+        cout<<"Please enter y or n: ";
+        cin >> choice;
+    }
+    if (choice == 'n') {
+        int choice2 = displayTransactionsMenu();
+        runOperation(choice2, clients, fileName);
+        return;
+    }
+    for (Client &cl : clients) {
+        if (cl.id== number) {
+            cl.balance += amount;
+            cout <<"New Balance: " << cl.balance << endl;
+            break;  
+        }
+    }
+       saveVectorToFile(fileName, clients);
+       cout<<"Transaction successful!" <<endl;
+       int choice2 = displayTransactionsMenu();
+       runOperation(choice2, clients, fileName);
 }
